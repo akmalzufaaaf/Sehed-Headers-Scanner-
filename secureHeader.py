@@ -31,6 +31,13 @@ def main():
     result = headerChecker(data)
     
     # print(f"Daftar Header yang tidak ada : \n{result}\n")
+    # Retrieve headers
+    headers = result.headers
+        
+        # Check server information
+    server_info = headers.get("Server", "Tidak ada informasi server ditemukan.")
+    print(f"\nInformasi Server: {server_info}")
+    
     
     if result:
         print("\nRekomendasi untuk header yang tidak ditemukan : ")
