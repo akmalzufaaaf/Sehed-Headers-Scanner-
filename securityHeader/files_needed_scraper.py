@@ -13,6 +13,6 @@ all_links += [script.get('src') for script in soup.find_all('script')]  # For Ja
 
 for link in all_links:
     if "ugm.ac.id" in link:
-        continue
+        pass
     else:
         print(link) 
