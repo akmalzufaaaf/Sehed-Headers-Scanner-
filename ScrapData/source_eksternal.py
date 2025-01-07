@@ -1,6 +1,32 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
+import json
+
+# to filter and save to json
+def filterUrl(url):
+    parsed_url = urlparse(url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+            
+    # File to store the JSON data
+    file_name = "output.json"
+
+    # Load existing data or initialize as an empty list
+    try:
+        with open(file_name, "r") as json_file:
+            data = json.load(json_file)
+    except FileNotFoundError:
+        data = []
+
+    # Append the new base URL if it's not already in the list
+    if base_url not in data:
+        data.append(base_url)
+
+    # Save the updated data back to the JSON file
+    with open(file_name, "w") as json_file:
+        json.dump(data, json_file, indent=4)
+
+    print(f"Base URL '{base_url}' appended to {file_name}")
 
 def check_external_resources_on_subpaths(base_url):
     try:
@@ -56,6 +82,7 @@ def check_resources_on_subpath(subpath_url, base_url):
                 # Periksa apakah resource berasal dari domain yang berbeda
                 if parsed_url.netloc and parsed_url.netloc != urlparse(base_url).netloc:
                     external_resources.append(full_resource_url)
+                    filterUrl(full_resource_url)
         
         # Tampilkan hasil
         if external_resources:
