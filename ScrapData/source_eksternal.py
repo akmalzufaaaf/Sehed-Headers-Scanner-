@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup #type: ignore
 from urllib.parse import urljoin, urlparse
 from collections import defaultdict
 import os
