@@ -69,7 +69,7 @@ def generate_nginx_openresty_config(missing_headers, csp_resources):
         config.append('  add_header Referrer-Policy "strict-origin-when-cross-origin";')
 
     if "Permissions-Policy" in missing_headers:
-        config.append('  add_header Permissions-Policy "geolocation=(), microphone=(), camera=()";')
+        config.append('  add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), payment()";')
 
     if "Content-Security-Policy" in missing_headers:
         formatted_csp = format_csp_policy(csp_resources)
@@ -100,7 +100,7 @@ def generate_cloudflare_config(missing_headers, csp_resources):
         config.append('security_headers { "Referrer-Policy": "strict-origin-when-cross-origin" }')
 
     if "Permissions-Policy" in missing_headers:
-        config.append('security_headers { "Permissions-Policy": "geolocation=(), microphone=(), camera=()" }')
+        config.append('security_headers { "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment()" }')
 
     if "Content-Security-Policy" in missing_headers:
         formatted_csp = format_csp_policy(csp_resources)
