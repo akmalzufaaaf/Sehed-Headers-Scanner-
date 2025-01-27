@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  flask_app:
+    container_name: flask_app
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_URL=mysql+pymysql://root:root@flask_db:3306/securityheader
+      - FLASK_APP=app.api  
+    depends_on:
+      - flask_db
+
+  flask_db:
+    container_name: flask_db
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=securityheader
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
