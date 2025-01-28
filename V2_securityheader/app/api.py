@@ -32,11 +32,8 @@ CONFIG_FOLDER = BASE_DIR / "configs"
 os.makedirs(CONFIG_FOLDER, exist_ok=True)
 
 # ================= KONFIGURASI DATABASE =================
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get(
-    'DB_URL', 
-    'mysql+pymysql://root:root@localhost:3306/securityheader'
-)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DB_URL')
+
 db = SQLAlchemy(app)
 
 # ================= MODEL DATABASE =================
@@ -205,4 +202,4 @@ def download_config(filename):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)
