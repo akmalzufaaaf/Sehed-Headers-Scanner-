@@ -1,7 +1,8 @@
-Flask==2.3.2
-Flask-SQLAlchemy==3.0.5
-pymysql==1.1.0
-bcrypt==4.0.1
-gunicorn==20.1.0
+Flask
+Flask-SQLAlchemy
+pymysql
+bcrypt
+gunicorn
 beautifulsoup4
 requests
+flask-limiter
