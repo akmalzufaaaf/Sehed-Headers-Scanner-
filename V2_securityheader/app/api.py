@@ -7,24 +7,11 @@ from saveConfig import save_configuration
 import os
 from urllib.parse import urlparse
 from flask_sqlalchemy import SQLAlchemy
-from base64 import b64decode
-from bcrypt import checkpw, hashpw, gensalt
 from datetime import datetime, timezone, timedelta
 from os import environ
 from pathlib import Path 
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_limiter.errors import RateLimitExceeded
-
 
 app = Flask(__name__)
-
-# =============== Konfigurasi Limiter ================
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["10 per minute"]
-)
 
 # ================= KONFIGURASI PATH =================
 BASE_DIR = Path(__file__).parent
@@ -60,24 +47,6 @@ RECOMMENDED_HEADERS = {
     "Content-Security-Policy": 'add_header Content-Security-Policy "default-src \'self\';";'
 }
 
-# ================= AUTHENTICATION =================
-def verify_auth():
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Basic "):
-        return False
-
-    try:
-        token = auth_header.split(" ")[1]
-        decoded_token = b64decode(token).decode("utf-8")
-        username, password = decoded_token.split(":")
-        
-        user = User.query.filter_by(username=username).first()
-        if user and checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
-            return True
-        return False
-    except:
-        return False
-
 # ================= LOGGING =================
 def save_access_log(ip_address, origin, response, status_code=None):
     if status_code is not None:
@@ -91,31 +60,13 @@ def save_access_log(ip_address, origin, response, status_code=None):
     db.session.add(log)
     db.session.commit()
 
-@app.errorhandler(RateLimitExceeded)
-def handle_ratelimit_error(e):
-    ip_address = request.remote_addr
-    origin = request.headers.get("Origin", "Unknown")
-    response_message = "Too Many Requests - You have exceeded the rate limit."
-
-    # Simpan log ke database dengan status 429
-    save_access_log(ip_address, origin, response_message, 429)
-
-    return jsonify({"error": response_message}), 429
-
 # ================= ROUTES =================
 @app.route("/")
-@limiter.limit("10 per minute")
 def home():
     return jsonify({"message": "Welcome to Security Header Scanner API"})
 
 @app.route("/scan", methods=["POST"])
-@limiter.limit("10 per minute")
 def scan_website():
-    if not verify_auth():
-        response = jsonify({"error": "Unauthorized Access"})
-        save_access_log(request.remote_addr, request.headers.get("Origin", "Unknown"), response.data.decode("utf-8"), 403)
-        return response, 403
-
     try:
         ip_address = request.remote_addr
         origin = request.headers.get("Origin", "Unknown")
@@ -155,7 +106,7 @@ def scan_website():
             config_filename = f"{subdomain}_cloudflare.conf"
 
         if config_content:
-            file_path = CONFIG_FOLDER / config_filename  # Gunakan path absolut
+            file_path = CONFIG_FOLDER / config_filename  
             save_configuration(config_content, file_path)
 
         recommended_headers_list = [RECOMMENDED_HEADERS[header] for header in missing_headers if header in RECOMMENDED_HEADERS]
@@ -182,14 +133,9 @@ def scan_website():
         return response, 500
 
 @app.route("/download/<filename>", methods=["GET"])
-@limiter.limit("10 per minute")
 def download_config(filename):
-    if not verify_auth():
-        response = jsonify({"error": "Unauthorized Access"})
-        save_access_log(request.remote_addr, request.headers.get("Origin", "Unknown"), response.data.decode("utf-8"), 403)
-        return response, 403
 
-    file_path = CONFIG_FOLDER / filename  # Gunakan path absolut
+    file_path = CONFIG_FOLDER / filename  
 
     if not os.path.exists(file_path):
         response = jsonify({"error": "Configuration file not found"})
@@ -202,4 +148,4 @@ def download_config(filename):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
