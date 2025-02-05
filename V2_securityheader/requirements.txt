@@ -6,3 +6,4 @@ gunicorn
 beautifulsoup4
 requests
 flask-limiter
+cryptography
