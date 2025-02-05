@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   flask_app:
-    container_name: flask_app
-    image: flask/securityheader:1.1
+    container_name: securityheaderAPI
+    image: v3_securityheader:1.1
     build: .
     ports:
       - "5000:5000"
@@ -11,10 +11,13 @@ services:
       - DB_URL=mysql+pymysql://root:root@flask_db:3306/securityheader  
       - FLASK_APP=api.py
     depends_on:
-      - flask_db
+      flask_db:
+        condition: service_healthy
+    restart: always
+    command: sh -c "sleep 5 && python api.py"
 
   flask_db:
-    container_name: flask_db
+    container_name: securityheader_db
     image: mysql:latest
     ports:
       - "3306:3306"  
@@ -23,6 +26,11 @@ services:
       - MYSQL_DATABASE=securityheader
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=root || exit 1"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   mysql_data:
